@@ -8,8 +8,10 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "start": "turbo run start",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "postinstall": "npm run generate --workspace=@ultimate/database"
   },
   "devDependencies": {
     "turbo": "latest",
