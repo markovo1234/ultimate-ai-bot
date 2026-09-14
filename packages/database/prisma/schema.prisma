@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id // Discord User ID
+  username      String
+  discriminator String
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  moderationLogs ModerationLog[]
+}
+
+model GuildSettings {
+  id            String   @id // Discord Guild ID
+  prefix        String   @default("!")
+  welcomeChannel String?
+  logChannel     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  aiConfig      AIConfig?
+  applications  ApplicationForm[]
+  moderationLogs ModerationLog[]
+}
+
+model AIConfig {
+  id            String   @id @default(uuid())
+  guildId       String   @unique
+  encryptedKey  String   // Encrypted AI API Key
+  provider      String   @default("openai") // openai, anthropic, gemini
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  guild         GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+model ApplicationForm {
+  id          String   @id @default(uuid())
+  guildId     String
+  userId      String
+  status      String   @default("PENDING") // PENDING, ACCEPTED, DENIED
+  content     String   // JSON string of the form answers
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  guild       GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+model ModerationLog {
+  id          String   @id @default(uuid())
+  guildId     String
+  targetId    String
+  moderatorId String
+  action      String   // KICK, BAN, MUTE, WARN
+  reason      String?
+  createdAt   DateTime @default(now())
+  
+  guild       GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  target      User          @relation(fields: [targetId], references: [id], onDelete: Cascade)
+}
