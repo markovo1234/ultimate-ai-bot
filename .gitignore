@@ -2,3 +2,5 @@ node_modules
 .next
 dist
 .env
+.turbo
+package-lock.json

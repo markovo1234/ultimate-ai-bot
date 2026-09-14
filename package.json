@@ -12,9 +12,13 @@
     "start": "turbo run start",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "postinstall": "npm run generate --workspace=@ultimate/database"
+    "postinstall": "npx prisma generate --schema=packages/database/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
+    "prisma": "^5.22.0",
     "turbo": "^1.13.4",
     "typescript": "^5.0.0"
   },
