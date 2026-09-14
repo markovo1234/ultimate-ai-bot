@@ -6,23 +6,23 @@ WORKDIR /app
 # Install OpenSSL for Prisma
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy package files first for layer caching
-COPY package.json ./
+# Copy package files and turbo config first for layer caching
+COPY package.json turbo.json ./
 COPY apps/bot/package.json ./apps/bot/
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
-# Install all dependencies (no lockfile, fresh Linux-native install)
+# Fresh Linux-native install (no lockfile = correct platform binaries)
 RUN npm install --legacy-peer-deps
 
-# Copy source code
+# Copy all source code
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
+RUN npx --yes prisma generate --schema=packages/database/prisma/schema.prisma
 
-# Build the Next.js web app and the bot
-RUN ./node_modules/.bin/turbo run build --filter=web --filter=@ultimate/bot
+# Build everything via turbo (uses locally installed turbo v1)
+RUN npm run build
 
 # Stage 2: Production image
 FROM node:20-slim AS runner
@@ -39,5 +39,5 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-# Start the Next.js web dashboard
-CMD ["npm", "run", "start", "--workspace=web"]
+# Start Next.js directly — no turbo, no workspace indirection
+CMD ["npx", "--yes", "next", "start", "--port", "3000"]

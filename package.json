@@ -12,7 +12,7 @@
     "start": "turbo run start",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "postinstall": "npx prisma generate --schema=packages/database/prisma/schema.prisma"
+    "postinstall": "npx --yes prisma generate --schema=packages/database/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"
