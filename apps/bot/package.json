@@ -10,7 +10,10 @@
   "dependencies": {
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
-    "@ultimate/database": "*"
+    "@ultimate/database": "*",
+    "openai": "^4.28.0",
+    "@anthropic-ai/sdk": "^0.17.1",
+    "@google/generative-ai": "^0.2.1"
   },
   "devDependencies": {
     "typescript": "^5.3.3",
