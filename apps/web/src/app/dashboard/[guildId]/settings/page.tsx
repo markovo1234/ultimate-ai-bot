@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const [bannedWords, setBannedWords] = useState('');
   const [maxMentions, setMaxMentions] = useState(5);
   const [autoModLogChannel, setAutoModLogChannel] = useState('');
+  const [aiModerationEnabled, setAiModerationEnabled] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +27,7 @@ export default function SettingsPage() {
         setBannedWords(data.autoMod.bannedWords);
         setMaxMentions(data.autoMod.maxMentions);
         setAutoModLogChannel(data.autoMod.logChannelId);
+        setAiModerationEnabled(data.autoMod.aiModerationEnabled);
         setLoading(false);
       });
   }, [guildId]);
@@ -40,7 +42,7 @@ export default function SettingsPage() {
         prefix,
         welcomeChannel,
         logChannel,
-        autoMod: { enabled: autoModEnabled, bannedWords, maxMentions, logChannelId: autoModLogChannel },
+        autoMod: { enabled: autoModEnabled, bannedWords, maxMentions, logChannelId: autoModLogChannel, aiModerationEnabled },
       }),
     });
     setStatus(res.ok ? 'Saved.' : 'Failed to save.');
@@ -118,6 +120,10 @@ export default function SettingsPage() {
                 placeholder="Channel ID"
               />
             </div>
+            <label className="text-sm flex items-center gap-2">
+              <input type="checkbox" checked={aiModerationEnabled} onChange={(e) => setAiModerationEnabled(e.target.checked)} />
+              Also classify messages with the configured AI provider (catches things keyword/mention rules miss; requires AI Configuration to be set up first, and sends message text to your chosen provider)
+            </label>
           </div>
         </div>
 

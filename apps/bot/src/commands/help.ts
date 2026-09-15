@@ -3,8 +3,9 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 export const data = new SlashCommandBuilder().setName('help').setDescription('List available commands');
 
 const CATEGORIES: Record<string, string[]> = {
-  Moderation: ['kick', 'ban', 'timeout', 'warn', 'clear'],
-  Utility: ['ping', 'userinfo', 'serverinfo', 'avatar', 'help'],
+  Moderation: ['kick', 'ban', 'softban', 'timeout', 'warn', 'clear', 'lockdown', 'unlock', 'modlogs'],
+  Utility: ['ping', 'userinfo', 'serverinfo', 'avatar', 'help', 'tag', 'remind'],
+  Fun: ['8ball', 'meme'],
   Economy: ['balance', 'daily', 'work', 'pay', 'leaderboard', 'shop', 'inventory'],
   Applications: ['apply'],
   AI: ['ai', 'summarize'],

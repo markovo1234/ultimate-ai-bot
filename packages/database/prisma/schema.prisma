@@ -82,7 +82,7 @@ model ModerationLog {
   guildId     String
   targetId    String
   moderatorId String
-  action      String   // KICK, BAN, TIMEOUT, WARN, CLEAR, AUTOMOD
+  action      String   // KICK, BAN, SOFTBAN, TIMEOUT, WARN, CLEAR, LOCKDOWN, UNLOCK, AUTOMOD
   reason      String?
   createdAt   DateTime @default(now())
 
@@ -93,14 +93,41 @@ model ModerationLog {
 }
 
 model AutoModConfig {
-  id           String  @id @default(uuid())
-  guildId      String  @unique
-  enabled      Boolean @default(false)
-  bannedWords  String  @default("") // comma-separated, case-insensitive
-  maxMentions  Int     @default(5)  // mentions in one message before action
-  logChannelId String?
+  id                  String  @id @default(uuid())
+  guildId             String  @unique
+  enabled             Boolean @default(false)
+  bannedWords         String  @default("") // comma-separated, case-insensitive
+  maxMentions         Int     @default(5)  // mentions in one message before action
+  logChannelId        String?
+  aiModerationEnabled Boolean @default(false) // opt-in: also classify messages with the guild's configured AI provider
 
   guild        GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+// Custom text snippets admins define, members recall by name (e.g. /tag get rules)
+model Tag {
+  id        String   @id @default(uuid())
+  guildId   String
+  name      String
+  content   String
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([guildId, name])
+}
+
+// Not FK'd to GuildSettings/User for the same lazy-creation reason as Wallet
+model Reminder {
+  id        String   @id @default(uuid())
+  userId    String
+  guildId   String
+  channelId String
+  message   String
+  remindAt  DateTime
+  createdAt DateTime @default(now())
+
+  @@index([remindAt])
 }
 
 // Economy: per-guild currency wallet for a user (not FK'd to User/GuildSettings so it

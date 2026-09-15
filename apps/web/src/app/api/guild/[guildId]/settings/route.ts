@@ -20,6 +20,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ gui
       bannedWords: autoMod?.bannedWords ?? '',
       maxMentions: autoMod?.maxMentions ?? 5,
       logChannelId: autoMod?.logChannelId ?? '',
+      aiModerationEnabled: autoMod?.aiModerationEnabled ?? false,
     },
   });
 }
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gui
     prefix?: string;
     welcomeChannel?: string;
     logChannel?: string;
-    autoMod?: { enabled?: boolean; bannedWords?: string; maxMentions?: number; logChannelId?: string };
+    autoMod?: { enabled?: boolean; bannedWords?: string; maxMentions?: number; logChannelId?: string; aiModerationEnabled?: boolean };
   };
 
   await prisma.guildSettings.upsert({
@@ -53,12 +54,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ gui
         bannedWords: autoMod.bannedWords ?? '',
         maxMentions: autoMod.maxMentions ?? 5,
         logChannelId: autoMod.logChannelId || null,
+        aiModerationEnabled: !!autoMod.aiModerationEnabled,
       },
       update: {
         enabled: !!autoMod.enabled,
         bannedWords: autoMod.bannedWords ?? '',
         maxMentions: autoMod.maxMentions ?? 5,
         logChannelId: autoMod.logChannelId || null,
+        aiModerationEnabled: !!autoMod.aiModerationEnabled,
       },
     });
   }

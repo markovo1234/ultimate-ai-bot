@@ -4,6 +4,7 @@ import { join } from 'path';
 import { readdirSync } from 'fs';
 import { handleApplicationSubmit } from './lib/applicationSubmit';
 import { handleAutoMod } from './lib/autoMod';
+import { startReminderLoop } from './lib/reminders';
 
 config();
 
@@ -35,6 +36,7 @@ for (const file of commandFiles) {
 
 client.once(Events.ClientReady, (c) => {
   console.log(`Ready! Logged in as ${c.user.tag}`);
+  startReminderLoop(c);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
