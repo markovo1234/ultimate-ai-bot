@@ -14,7 +14,7 @@ model User {
   avatar        String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   // Relations
   moderationLogs ModerationLog[]
 }
@@ -26,11 +26,13 @@ model GuildSettings {
   logChannel     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   // Relations
-  aiConfig      AIConfig?
-  applications  ApplicationForm[]
-  moderationLogs ModerationLog[]
+  aiConfig             AIConfig?
+  applications          ApplicationForm[]
+  applicationQuestions  ApplicationQuestion[]
+  moderationLogs        ModerationLog[]
+  autoMod               AutoModConfig?
 }
 
 model AIConfig {
@@ -40,20 +42,39 @@ model AIConfig {
   provider      String   @default("openai") // openai, anthropic, gemini
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   guild         GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
 }
 
+// A single question in a guild's custom application form (max 5 used per modal - Discord limit)
+model ApplicationQuestion {
+  id        String   @id @default(uuid())
+  guildId   String
+  label     String
+  style     String   @default("SHORT") // SHORT or PARAGRAPH -> Discord TextInputStyle
+  required  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  guild     GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId])
+}
+
+// A member's submitted answers to a guild's application form
 model ApplicationForm {
   id          String   @id @default(uuid())
   guildId     String
   userId      String
   status      String   @default("PENDING") // PENDING, ACCEPTED, DENIED
-  content     String   // JSON string of the form answers
+  content     String   // JSON string of { questionLabel: answer }
+  reviewerId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   guild       GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@index([guildId, status])
 }
 
 model ModerationLog {
@@ -61,10 +82,65 @@ model ModerationLog {
   guildId     String
   targetId    String
   moderatorId String
-  action      String   // KICK, BAN, MUTE, WARN
+  action      String   // KICK, BAN, TIMEOUT, WARN, CLEAR, AUTOMOD
   reason      String?
   createdAt   DateTime @default(now())
-  
+
   guild       GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
   target      User          @relation(fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@index([guildId, createdAt])
+}
+
+model AutoModConfig {
+  id           String  @id @default(uuid())
+  guildId      String  @unique
+  enabled      Boolean @default(false)
+  bannedWords  String  @default("") // comma-separated, case-insensitive
+  maxMentions  Int     @default(5)  // mentions in one message before action
+  logChannelId String?
+
+  guild        GuildSettings @relation(fields: [guildId], references: [id], onDelete: Cascade)
+}
+
+// Economy: per-guild currency wallet for a user (not FK'd to User/GuildSettings so it
+// can be created lazily from any command without forcing those rows to exist first)
+model Wallet {
+  id        String    @id @default(uuid())
+  userId    String
+  guildId   String
+  balance   Int       @default(0)
+  bank      Int       @default(0)
+  lastDaily DateTime?
+  lastWork  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([userId, guildId])
+  @@index([guildId, balance])
+}
+
+model ShopItem {
+  id          String   @id @default(uuid())
+  guildId     String
+  name        String
+  description String?
+  price       Int
+  createdAt   DateTime @default(now())
+
+  inventoryItems InventoryItem[]
+
+  @@unique([guildId, name])
+}
+
+model InventoryItem {
+  id       String @id @default(uuid())
+  userId   String
+  guildId  String
+  itemId   String
+  quantity Int    @default(1)
+
+  item     ShopItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemId])
 }

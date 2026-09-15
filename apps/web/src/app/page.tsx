@@ -33,19 +33,19 @@ export default async function Home() {
         <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl">
           <h2 className="text-2xl font-semibold mb-2">AI Configuration</h2>
           <p className="text-gray-400 mb-4">Set up your API keys and default models for the AI commands.</p>
-          <Link href="/dashboard/ai" className="text-indigo-400 hover:text-indigo-300">Configure &rarr;</Link>
+          <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300">Configure &rarr;</Link>
         </div>
-        
+
         <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl">
           <h2 className="text-2xl font-semibold mb-2">Application Forms</h2>
           <p className="text-gray-400 mb-4">Manage custom applications and review submissions.</p>
-          <Link href="/dashboard/applications" className="text-indigo-400 hover:text-indigo-300">Manage &rarr;</Link>
+          <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300">Manage &rarr;</Link>
         </div>
-        
+
         <div className="bg-gray-900 border border-gray-800 p-6 rounded-xl">
           <h2 className="text-2xl font-semibold mb-2">Moderation Logs</h2>
           <p className="text-gray-400 mb-4">View recent kicks, bans, mutes, and warnings.</p>
-          <Link href="/dashboard/logs" className="text-indigo-400 hover:text-indigo-300">View Logs &rarr;</Link>
+          <Link href="/dashboard" className="text-indigo-400 hover:text-indigo-300">View Logs &rarr;</Link>
         </div>
       </div>
     </main>

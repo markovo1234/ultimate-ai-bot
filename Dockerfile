@@ -39,5 +39,5 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-# Start Next.js directly — no turbo, no workspace indirection
-CMD ["npx", "--yes", "next", "start", "--port", "3000"]
+# Start both the Discord bot and the Next.js dashboard in one container
+CMD ["node", "start.js"]

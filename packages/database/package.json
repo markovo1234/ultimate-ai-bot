@@ -1,8 +1,8 @@
 {
   "name": "@ultimate/database",
   "version": "1.0.0",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "dependencies": {
     "@prisma/client": "^5.10.2"
   },
@@ -11,6 +11,7 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
+    "build": "tsc",
     "generate": "prisma generate",
     "push": "prisma db push"
   }
