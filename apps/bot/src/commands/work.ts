@@ -16,23 +16,25 @@ export const data = new SlashCommandBuilder().setName('work').setDescription('Wo
 export async function execute(interaction: ChatInputCommandInteraction) {
   const userId = interaction.user.id;
   const guildId = interaction.guildId!;
-  const wallet = await ensureWallet(userId, guildId);
-
-  if (wallet.lastWork) {
-    const elapsed = Date.now() - wallet.lastWork.getTime();
-    if (elapsed < COOLDOWN_MS) {
-      const minutes = Math.ceil((COOLDOWN_MS - elapsed) / 60000);
-      return interaction.reply({ content: `⏳ You're still on shift. Try again in ${minutes}m.`, ephemeral: true });
-    }
-  }
+  await ensureWallet(userId, guildId);
 
   const earned = 50 + Math.floor(Math.random() * 150);
   const job = JOBS[Math.floor(Math.random() * JOBS.length)];
 
-  const updated = await prisma.wallet.update({
-    where: { userId_guildId: { userId, guildId } },
+  // Conditional UPDATE, same reasoning as /daily - closes the double-claim race.
+  const cutoff = new Date(Date.now() - COOLDOWN_MS);
+  const claimed = await prisma.wallet.updateMany({
+    where: { userId, guildId, OR: [{ lastWork: null }, { lastWork: { lt: cutoff } }] },
     data: { balance: { increment: earned }, lastWork: new Date() },
   });
 
-  await interaction.reply(`\u{1F4BC} You ${job} and earned **${earned}** coins! Balance: **${updated.balance}**.`);
+  if (claimed.count === 0) {
+    const wallet = await prisma.wallet.findUniqueOrThrow({ where: { userId_guildId: { userId, guildId } } });
+    const elapsed = wallet.lastWork ? Date.now() - wallet.lastWork.getTime() : COOLDOWN_MS;
+    const minutes = Math.ceil(Math.max(COOLDOWN_MS - elapsed, 0) / 60000);
+    return interaction.reply({ content: `⏳ You're still on shift. Try again in ${minutes}m.`, ephemeral: true });
+  }
+
+  const wallet = await prisma.wallet.findUniqueOrThrow({ where: { userId_guildId: { userId, guildId } } });
+  await interaction.reply(`\u{1F4BC} You ${job} and earned **${earned}** coins! Balance: **${wallet.balance}**.`);
 }

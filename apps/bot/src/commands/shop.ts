@@ -54,22 +54,31 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const item = await prisma.shopItem.findUnique({ where: { guildId_name: { guildId, name } } });
     if (!item) return interaction.reply({ content: 'No item with that name.', ephemeral: true });
 
-    const wallet = await ensureWallet(interaction.user.id, guildId);
-    if (wallet.balance < item.price) {
-      return interaction.reply({ content: `You need ${item.price} coins, you have ${wallet.balance}.`, ephemeral: true });
-    }
+    await ensureWallet(interaction.user.id, guildId);
 
-    await prisma.$transaction([
-      prisma.wallet.update({
-        where: { userId_guildId: { userId: interaction.user.id, guildId } },
-        data: { balance: { decrement: item.price } },
-      }),
-      prisma.inventoryItem.upsert({
-        where: { userId_itemId: { userId: interaction.user.id, itemId: item.id } },
-        create: { userId: interaction.user.id, guildId, itemId: item.id, quantity: 1 },
-        update: { quantity: { increment: 1 } },
-      }),
-    ]);
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Same conditional-UPDATE guard as /pay - avoids a stale-read race letting two
+        // concurrent purchases both pass the balance check off the same pre-buy balance.
+        const debited = await tx.wallet.updateMany({
+          where: { userId: interaction.user.id, guildId, balance: { gte: item.price } },
+          data: { balance: { decrement: item.price } },
+        });
+        if (debited.count === 0) {
+          throw new Error('INSUFFICIENT_FUNDS');
+        }
+        await tx.inventoryItem.upsert({
+          where: { userId_itemId: { userId: interaction.user.id, itemId: item.id } },
+          create: { userId: interaction.user.id, guildId, itemId: item.id, quantity: 1 },
+          update: { quantity: { increment: 1 } },
+        });
+      });
+    } catch (e) {
+      if (e instanceof Error && e.message === 'INSUFFICIENT_FUNDS') {
+        return interaction.reply({ content: `You need ${item.price} coins.`, ephemeral: true });
+      }
+      throw e;
+    }
 
     return interaction.reply(`\u{1F6CD}️ You bought **${item.name}** for ${item.price} coins.`);
   }

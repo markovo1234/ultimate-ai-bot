@@ -26,14 +26,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   try {
     await prisma.$transaction(async (tx) => {
-      const sender = await tx.wallet.findUniqueOrThrow({ where: { userId_guildId: { userId: interaction.user.id, guildId } } });
-      if (sender.balance < amount) {
-        throw new Error('INSUFFICIENT_FUNDS');
-      }
-      await tx.wallet.update({
-        where: { userId_guildId: { userId: interaction.user.id, guildId } },
+      // Conditional UPDATE (balance checked and decremented atomically) instead of a
+      // separate read-then-write - otherwise two concurrent /pay calls can both read
+      // the pre-decrement balance, both pass the check, and both apply their decrement.
+      const debited = await tx.wallet.updateMany({
+        where: { userId: interaction.user.id, guildId, balance: { gte: amount } },
         data: { balance: { decrement: amount } },
       });
+      if (debited.count === 0) {
+        throw new Error('INSUFFICIENT_FUNDS');
+      }
       await tx.wallet.update({
         where: { userId_guildId: { userId: target.id, guildId } },
         data: { balance: { increment: amount } },
