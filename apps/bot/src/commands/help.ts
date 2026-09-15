@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder().setName('help').setDescription('Li
 const CATEGORIES: Record<string, string[]> = {
   Moderation: ['kick', 'ban', 'timeout', 'warn', 'clear'],
   Utility: ['ping', 'userinfo', 'serverinfo', 'avatar', 'help'],
-  Economy: ['balance', 'daily', 'work', 'pay', 'leaderboard', 'shop'],
+  Economy: ['balance', 'daily', 'work', 'pay', 'leaderboard', 'shop', 'inventory'],
   Applications: ['apply'],
   AI: ['ai', 'summarize'],
 };

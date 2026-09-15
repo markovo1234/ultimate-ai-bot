@@ -12,6 +12,7 @@
     "start": "turbo run start",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "deploy-commands": "npm run deploy-commands --workspace=apps/bot",
     "postinstall": "npx --yes prisma generate --schema=packages/database/prisma/schema.prisma"
   },
   "dependencies": {
