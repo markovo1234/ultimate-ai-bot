@@ -1,29 +1,103 @@
 import Link from 'next/link';
 
+interface ModuleCard {
+  href: string;
+  title: string;
+  description: string;
+  icon: string;
+}
+interface ModuleGroup {
+  title: string;
+  cards: ModuleCard[];
+}
+
 export default async function GuildOverviewPage({ params }: { params: Promise<{ guildId: string }> }) {
   const { guildId } = await params;
 
-  const cards = [
-    { href: `/dashboard/${guildId}/ai`, title: 'AI Configuration', desc: 'Set up your API key and provider for the AI commands.' },
-    { href: `/dashboard/${guildId}/applications`, title: 'Applications', desc: 'Build your form and review submissions.' },
-    { href: `/dashboard/${guildId}/logs`, title: 'Moderation Logs', desc: 'View recent kicks, bans, timeouts, and warnings.' },
-    { href: `/dashboard/${guildId}/settings`, title: 'Settings', desc: 'Welcome/log channels and auto-moderation.' },
-    { href: `/dashboard/${guildId}/embed`, title: 'Embed Builder', desc: 'Compose and send a rich embed to a channel.' },
+  const groups: ModuleGroup[] = [
+    {
+      title: 'Applications',
+      cards: [
+        {
+          href: `/dashboard/${guildId}/applications`,
+          title: 'Review Queue',
+          description: 'Review, accept, or deny member applications.',
+          icon: '\u{1F4CB}',
+        },
+        {
+          href: `/dashboard/${guildId}/applications/questions`,
+          title: 'Form Builder',
+          description: 'Configure the questions members answer with /apply.',
+          icon: '✏️',
+        },
+      ],
+    },
+    {
+      title: 'Moderation',
+      cards: [
+        {
+          href: `/dashboard/${guildId}/logs`,
+          title: 'Logs',
+          description: 'View recent kicks, bans, timeouts, and warnings.',
+          icon: '\u{1F6E1}️',
+        },
+        {
+          href: `/dashboard/${guildId}/settings`,
+          title: 'Auto-Mod & Settings',
+          description: 'Banned words, mention limits, welcome/log channels.',
+          icon: '⚙️',
+        },
+      ],
+    },
+    {
+      title: 'AI',
+      cards: [
+        {
+          href: `/dashboard/${guildId}/ai`,
+          title: 'Configuration',
+          description: 'Set your provider and API key for /ai and /summarize.',
+          icon: '✨',
+        },
+      ],
+    },
+    {
+      title: 'Tools',
+      cards: [
+        {
+          href: `/dashboard/${guildId}/embed`,
+          title: 'Embed Builder',
+          description: 'Compose and send a rich embed to a channel.',
+          icon: '\u{1F4E8}',
+        },
+      ],
+    },
   ];
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Server Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cards.map((c) => (
-          <Link
-            key={c.href}
-            href={c.href}
-            className="bg-gray-900 border border-gray-800 hover:border-indigo-500 p-6 rounded-xl transition-colors block"
-          >
-            <h2 className="text-xl font-semibold mb-2">{c.title}</h2>
-            <p className="text-gray-400 text-sm">{c.desc}</p>
-          </Link>
+      <h1 className="text-3xl font-bold mb-1">Modules</h1>
+      <p className="text-gray-400 mb-8">Configure Ultimate AI Bot for this server.</p>
+
+      <div className="space-y-10">
+        {groups.map((group) => (
+          <section key={group.title}>
+            <h2 className="text-lg font-semibold border-b border-gray-800 pb-2 mb-4">{group.title}</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {group.cards.map((card) => (
+                <div key={card.href} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col">
+                  <div className="w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center text-lg mb-3">{card.icon}</div>
+                  <h3 className="font-semibold mb-1">{card.title}</h3>
+                  <p className="text-gray-400 text-sm mb-4 flex-1">{card.description}</p>
+                  <Link
+                    href={card.href}
+                    className="inline-flex items-center justify-center gap-1.5 text-sm bg-gray-800 hover:bg-gray-700 rounded-md px-3 py-1.5 w-fit"
+                  >
+                    {'⚙️'} Configure
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     </div>
