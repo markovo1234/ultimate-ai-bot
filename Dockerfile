@@ -11,6 +11,9 @@ COPY package.json turbo.json ./
 COPY apps/bot/package.json ./apps/bot/
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
+# postinstall runs `prisma generate` during `npm install` below, so the schema has
+# to be present before that step - not just the package.json - or it fails the build
+COPY packages/database/prisma ./packages/database/prisma/
 
 # Fresh Linux-native install (no lockfile = correct platform binaries)
 RUN npm install --legacy-peer-deps
